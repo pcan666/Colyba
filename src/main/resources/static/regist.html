@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册</title>
+</head>
+<body>
+<h2>注册界面</h2>
+<div>
+    <label for="username">用户名:</label>
+    <input type="text" id="username" name="username" required/>
+    <label for="nickname">昵称:</label>
+    <input type="text" id="nickname" name="nickname" required/>
+    <label for="password">密码:</label>
+    <input type="password" id="password" name="password" required/>
+    <label for="confirm_password">确认密码:</label>
+    <input type="password" id="confirm_password" required/>
+    <label for="sex">性别:</label>
+    <select id="sex" name="sex" required>
+        <option value="1" name="sex">男</option>
+        <option value="0" name="sex">女</option>
+    </select>
+    <button id="registButton" onclick="regist()">注册</button>
+    <button type="reset">重置</button>
+</div>
+</body>
+<script>
+    function regist() {
+        //前端验证两次输入密码是否一致
+        let pwd = document.getElementById('password').value;
+        let confPwd = document.getElementById('confirm_password').value;
+
+        if(pwd!==confPwd){
+            alert("两次输入密码不一致")
+            //将密码框清空
+            document.getElementById('password').value='';
+            document.getElementById('confirm_password').value='';
+        }
+
+        fetch('/employee/insert',{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;Character=UTF-8'
+            },
+            body: JSON.stringify({
+                username: this.username.value,
+                nickname: this.nickname.value,
+                password: this.password.value,
+                sex: this.sex.value,
+            })
+        }).then(response => response.json()).then(data => {
+            if (data.code === 1) {
+                console.log(data);
+            } else {
+                alert(data.msg)
+            }
+        })
+    }
+</script>
+</html>

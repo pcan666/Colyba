@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+</head>
+<body>
+<form id="loginDiv" style="display: block">
+    <h2>登录界面</h2>
+    <input type="text" placeholder="请输入用户名" id="username">
+    <input type="password" placeholder="请输入密码" id="password">
+    <button id="loginButton" onclick="login()">登录</button>
+    <button type="reset">重置</button>
+    <button onclick="location.href='/regist.html'">注册</button>
+</form>
+
+<div id="employeeInfoDiv" style="display: none">
+    <h2>登陆成功</h2>
+    <div>
+        <h4>个人信息</h4>
+        <ul>
+            <li>用户名: <span id="showUsername"></span></li>
+            <li>昵称: <span id="showNickname"></span></li>
+            <li>性别: <span id="showSex"></span></li>
+        </ul>
+        <button id="edit" onclick="edit()">编辑</button>
+        <button id="updPwd" onclick="updPwd()">修改密码</button>
+        <button id="logoutButton" onclick="logout()">注销</button>
+    </div>
+</div>
+
+<div id="editDiv" style="display: none">
+    <label for="editUsername">用户名:</label>
+    <input type="text" id="editUsername" name="username" required/>
+    <label for="editNickname">昵称:</label>
+    <input type="text" id="editNickname" name="nickname" required/>
+    <label for="editSex">修改性别:</label>
+    <select id="editSex" name="editSex" required>
+        <option value="1" name="editSex">男</option>
+        <option value="0" name="editSex">女</option>
+    </select>
+    <button id="editButton" onclick="update()">保存修改</button>
+    <button type="reset">重置</button>
+    <button onclick="cancel()">取消修改</button>
+</div>
+
+<div id="updPwdDiv" style="display: none">
+    <label for="defaultPwd">初始密码:</label>
+    <input type="password" id="defaultPwd" name="password" required/>
+    <label for="newPassword">新密码:</label>
+    <input type="password" id="newPassword" name="password" required/>
+    <label for="confirm_newPassword">确认密码:</label>
+    <input type="password" id="confirm_newPassword" required/>
+
+    <button id="updPwdButton" onclick="update()">保存修改</button>
+    <button type="reset">重置</button>
+    <button onclick="cancel()">取消修改</button>
+</div>
+
+</body>
+<script>
+
+    //阻止表单默认提交
+    document.getElementById("loginDiv").addEventListener('submit', function (e) {
+        e.preventDefault();
+    })
+
+    let loginPwd = null;
+
+    function login() {
+        let username = document.getElementById("username").value;
+        let password = document.getElementById('password').value;
+        if (username === '' || password === '') {
+            alert("请输入用户名或密码")
+            return;
+        }
+        fetch('/employee/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;Character=UTF-8'
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password,
+            })
+        }).then(response => response.json()).then(data => {
+            if (data.code === 1) {
+                alert("登陆成功")
+                //登陆成功
+                //1.隐藏登录功能
+                document.getElementById('loginDiv').style.display = 'none';
+                //2.展示个人信息
+                document.getElementById('employeeInfoDiv').style.display = 'block';
+                //将数据映射到表格中
+                document.getElementById('showUsername').textContent = data.data.username;
+                document.getElementById('showNickname').textContent = data.data.nickname;
+                //将密码保存到全局变量
+                loginPwd = data.data.password;
+                if (data.data.sex === 1) {
+                    document.getElementById('showSex').textContent = '男'
+                } else {
+                    document.getElementById('showSex').textContent = '女'
+                }
+            } else {
+                alert(data.msg)
+            }
+        })
+    }
+
+    //注销按钮
+    function logout() {
+        //显示主界面
+        //隐藏个人信息
+        //刷新页面即可实现
+        alert("账号已注销")
+        window.location.reload()
+    }
+
+    //编辑按钮
+    function edit() {
+        //隐藏个人信息
+        document.getElementById("employeeInfoDiv").style.display = "none"
+        //展示编辑信息
+        document.getElementById("editDiv").style.display = "block"
+        //将可修改的个人数据添加到输入框初始内容
+        document.getElementById("editUsername").innerText = document.getElementById("showUsername").textContent;
+        document.getElementById("editNickname").value = document.getElementById("showNickname").textContent;
+        document.getElementById("editSex").selectIndex = document.getElementById("showSex").textContent;
+    }
+
+    // 更新按钮
+    function updPwd() {
+        //隐藏个人信息
+        document.getElementById("employeeInfoDiv").style.display = "none"
+        //展示更新密码信息
+        document.getElementById("updPwdDiv").style.display = "block"
+
+    }
+
+    //取消修改按钮
+    function cancel() {
+        //隐藏
+        document.getElementById("updPwdDiv").style.display = "none"
+        document.getElementById("editDiv").style.display = "none"
+        //显示
+        document.getElementById("employeeInfoDiv").style.display = "block"
+    }
+
+    //更新按钮
+    function update() {
+        if (document.getElementById("updPwdDiv").style.display === "block") {//更新密码逻辑
+            //先判断原密码是否正确
+            if (document.getElementById("defaultPwd").innerText===loginPwd) {//正确
+                //判断两次输入的新密码是否一致
+                if (document.getElementById("newPassword").innerText === document.getElementById("confirm_newPassword").innerText) {
+                    fetch('/employee/update', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json;Character=UTF-8'
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            password: password,
+                        })
+                    }).then(response => response.json()).then(data => {}
+                }else {
+                    //两次输入密码不一致
+                    alert("两次输入密码不一致")
+                }
+            }else {//错误
+                alert("密码错误")
+            }
+        } else {//编辑信息逻辑
+
+        }
+    }
+</script>
+</html>
